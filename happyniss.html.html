@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日暖心提示</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            text-align: center;
+            transition: background-image 1s ease;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 80%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        .date-info {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .lunar-info {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            color: #8e44ad;
+        }
+        .saying {
+            font-size: 1.8em;
+            margin: 30px 0;
+            line-height: 1.5;
+            min-height: 4em;
+        }
+        .greeting {
+            font-size: 2em;
+            color: #e67e22;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>每日暖心提示</h1>
+        <div class="date-info" id="currentDate"></div>
+        <div class="lunar-info" id="lunarDate"></div>
+        <div class="saying" id="randomSaying"></div>
+        <div class="greeting" id="timeGreeting"></div>
+    </div>
+
+    <script>
+        // 10张温暖背景图（可替换为你的图片URL）
+        const backgrounds = [
+            "url('https://images.unsplash.com/photo-1490750967868-88aa4486c946?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1499002238440-d264edd596ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1468276311594-df7cb65d8df6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1490730141103-6cac27aaab94?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+            "url('https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"
+        ];
+
+        // 20条治愈文案
+        const sayings = [
+            "生活就像一杯茶，不会苦一辈子，但总会苦一阵子",
+            "今天的努力，是明天的花开",
+            "每一个不曾起舞的日子，都是对生命的辜负",
+            "慢慢来，谁还没有一个努力的过程",
+            "生活不是等待暴风雨过去，而是学会在雨中跳舞",
+            "你值得所有美好的事物",
+            "今天的不开心就到此为止吧，明天依旧光芒万丈",
+            "保持热爱，奔赴山海",
+            "愿你成为自己的太阳，无需凭借谁的光",
+            "所有幸运，都是努力埋下的伏笔",
+            "生活总会给你另一个机会，这个机会叫明天",
+            "把平凡的日子过成诗",
+            "愿你眼中有星辰，身边有微风，心中有暖阳",
+            "最好的总会在最不经意的时候出现",
+            "今天也要做全宇宙最快乐的小朋友",
+            "生活很苦，但你要甜",
+            "愿你被世界温柔以待",
+            "心若向阳，无畏悲伤",
+            "慢慢变好，才是给自己最好的礼物",
+            "今天的不开心到此为止，明天依旧万丈光芒"
+        ];
+
+        // 宜忌数据（简化版）
+        const auspicious = ["学习", "运动", "约会", "创作", "旅行", "整理", "分享", "尝试新事物"];
+        const taboo = ["拖延", "熬夜", "冲动消费", "过度自责", "暴饮暴食"];
+
+        // 初始化显示
+        function updateDisplay() {
+            const now = new Date();
+            
+            // 1. 显示当前日期
+            document.getElementById('currentDate').innerHTML = 
+                `今天是 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${['日','一','二','三','四','五','六'][now.getDay()]}`;
+            
+            // 2. 显示农历（简化版，实际应该调用API）
+            const lunarDate = getLunarDate(now);
+            document.getElementById('lunarDate').innerHTML = 
+                `农历${lunarDate} · 宜：${randomItem(auspicious)} · 忌：${randomItem(taboo)}`;
+            
+            // 3. 随机治愈文案
+            document.getElementById('randomSaying').textContent = randomItem(sayings);
+            
+            // 4. 根据时间显示问候语
+            const hours = now.getHours();
+            document.getElementById('timeGreeting').textContent = 
+                (hours >= 6 && hours < 12) ? "今天也要开心哦 ☀️" : "欢迎回家，请放下所有烦恼 🌙";
+            
+            // 5. 随机背景图
+            document.body.style.backgroundImage = randomItem(backgrounds);
+        }
+
+        // 辅助函数：获取随机数组元素
+        function randomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // 简化版农历计算（实际项目应该使用专业库）
+        function getLunarDate(date) {
+            // 这里应该是调用农历API的代码
+            // 为演示使用固定值，实际项目请替换为真实农历数据
+            const lunarMonths = ["正","二","三","四","五","六","七","八","九","十","冬","腊"];
+            return `${lunarMonths[date.getMonth()]}月${date.getDate()}日`;
+        }
+
+        // 页面加载时运行
+        updateDisplay();
+        
+        // 每小时自动更新一次
+        setInterval(updateDisplay, 60 * 60 * 1000);
+    </script>
+</body>
+</html>
